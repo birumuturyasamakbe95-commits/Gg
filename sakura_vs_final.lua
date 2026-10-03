@@ -5616,16 +5616,20 @@ function paintFloatingBtn(btnFrame, active)
     local bg = btnFrame:FindFirstChild("BtnGrad")
     local label = btnFrame:FindFirstChild("TextLabel")
     local stroke = btnFrame:FindFirstChildOfClass("UIStroke")
-    btnFrame.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    -- Zorla beyaz yazı (her durumda)
+    -- Sakura hub bat-aimbot button style:
+    -- active  = solid red bg + white text
+    -- inactive = black bg + red text
+    local RED = Color3.fromRGB(220, 30, 40)
+    local BLACK = Color3.fromRGB(0, 0, 0)
     local WHITE = Color3.fromRGB(255, 255, 255)
     if active then
-        local c = getThemeColor()
+        btnFrame.BackgroundColor3 = RED
         if bg then
+            bg.Enabled = true
             bg.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0.00, c:Lerp(Color3.new(1,1,1), 0.55)),
-                ColorSequenceKeypoint.new(0.45, c),
-                ColorSequenceKeypoint.new(1.00, c:Lerp(Color3.new(0,0,0), 0.35)),
+                ColorSequenceKeypoint.new(0.00, RED),
+                ColorSequenceKeypoint.new(0.50, RED),
+                ColorSequenceKeypoint.new(1.00, RED),
             })
         end
         if label then
@@ -5637,30 +5641,32 @@ function paintFloatingBtn(btnFrame, active)
             btnFrame.TextTransparency = 0
         end
         if stroke then
-            stroke.Color = c
+            stroke.Color = RED
             stroke.Thickness = 1.5
-            stroke.Transparency = 0.1
+            stroke.Transparency = 0.15
         end
     else
+        btnFrame.BackgroundColor3 = BLACK
         if bg then
+            bg.Enabled = true
             bg.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 55, 105)),
-                ColorSequenceKeypoint.new(0.40, Color3.fromRGB(18, 40, 78)),
-                ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 24, 52)),
+                ColorSequenceKeypoint.new(0.00, BLACK),
+                ColorSequenceKeypoint.new(0.50, BLACK),
+                ColorSequenceKeypoint.new(1.00, BLACK),
             })
         end
         if label then
-            label.TextColor3 = WHITE
+            label.TextColor3 = RED
             label.TextTransparency = 0
         end
         if btnFrame:IsA("TextButton") then
-            btnFrame.TextColor3 = WHITE
+            btnFrame.TextColor3 = RED
             btnFrame.TextTransparency = 0
         end
         if stroke then
-            stroke.Color = Color3.fromRGB(50, 110, 200)
+            stroke.Color = RED
             stroke.Thickness = 1.2
-            stroke.Transparency = 0.3
+            stroke.Transparency = 0.25
         end
     end
 end
@@ -9182,8 +9188,8 @@ function buildGui()
     local SILVER = Color3.fromRGB(140, 190, 255)
     local SILVER_DARK = Color3.fromRGB(60, 110, 180)
     local SILVER_LIGHT = Color3.fromRGB(180, 220, 255)
-    local BG = Color3.fromRGB(12, 28, 55)
-    local BG2 = Color3.fromRGB(18, 40, 75)
+    local BG = Color3.fromRGB(28, 8, 12)
+    local BG2 = Color3.fromRGB(42, 12, 18)
     local ROW_BG = Color3.fromRGB(12, 24, 48)
     local ROW_BORDER = Color3.fromRGB(50, 110, 200)
     local WHITE = Color3.fromRGB(255,255,255)
@@ -9252,7 +9258,7 @@ function buildGui()
     bgWash.Parent = main
     Instance.new("UICorner", bgWash).CornerRadius = UDim.new(0, 18)
 
-    main.BackgroundColor3 = Color3.fromRGB(8, 18, 40)
+    main.BackgroundColor3 = Color3.fromRGB(12, 4, 8)
     main.BackgroundTransparency = 0.62
 
 
@@ -9288,7 +9294,7 @@ function buildGui()
     local closeBtn = Instance.new("TextButton", main)
     closeBtn.Size = UDim2.new(0, 32, 0, 32)
     closeBtn.Position = UDim2.new(1, -42, 0, 8)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(25, 55, 110)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(90, 18, 28)
     closeBtn.BackgroundTransparency = 0.15
     closeBtn.BorderSizePixel = 0
     closeBtn.Text = "−"
@@ -9303,7 +9309,7 @@ function buildGui()
         TS:Create(closeBtn, TweenInfo.new(0.12), {TextColor3 = WHITE, BackgroundColor3 = getThemeColor()}):Play()
     end)
     closeBtn.MouseLeave:Connect(function()
-        TS:Create(closeBtn, TweenInfo.new(0.12), {TextColor3 = WHITE, BackgroundColor3 = Color3.fromRGB(25, 55, 110)}):Play()
+        TS:Create(closeBtn, TweenInfo.new(0.12), {TextColor3 = WHITE, BackgroundColor3 = Color3.fromRGB(90, 18, 28)}):Play()
     end)
 
     miniBtn = Instance.new("TextButton", gui)
@@ -9955,22 +9961,6 @@ function buildGui()
     do local row = mkRow(speedPage, 38); mkLabel(row, "Soft Steal Speed"); carrySysSoftStealSpeedBox = mkBox(row, CarrySystem.softStealSpeed, 50, 56, function(v) if v > 0 and v <= 500 then CarrySystem:setSoftStealSpeed(v); saveAllSettings() end end) end
     do local row = mkRow(speedPage, 38); mkLabel(row, "Soft Steal Radius"); carrySysSoftStealRadiusBox = mkBox(row, CarrySystem.softStealRadius, 50, 56, function(v) if v > 0 then CarrySystem:setSoftStealRadius(v); saveAllSettings() end end) end
 
-    mkSect(speedPage, "Speed Bypass")
-    SpeedBypassPanel.setVisual = mkToggle(speedPage, "Speed Bypass Panel", function(on)
-        if on then
-            if not SpeedBypassPanel.visible then
-                createSpeedBypassPanel()
-            end
-        else
-            if SpeedBypassPanel.visible then
-                destroySpeedBypassPanel()
-            end
-        end
-    end)
-    if SpeedBypassPanel.setVisual then
-        SpeedBypassPanel.setVisual(SpeedBypassPanel.visible == true)
-    end
-
     -- sakura.vs Anti Bat Panel
     mkSect(speedPage, "sakura.vs Anti Bat")
     local setAntiBatPanelVisual = nil
@@ -9982,22 +9972,6 @@ function buildGui()
         end
     end)
     if setAntiBatPanelVisual then setAntiBatPanelVisual(antiBatPanelVisible == true) end
-
-    mkSect(speedPage, "Anti TP Bat")
-    AntiTPBatPanel.setVisual = mkToggle(speedPage, "Anti TP Bat", function(on)
-        if on then
-            if not AntiTPBatPanel.visible then
-                createAntiTPBatPanel()
-            end
-        else
-            if AntiTPBatPanel.visible then
-                destroyAntiTPBatPanel()
-            end
-        end
-    end)
-    if AntiTPBatPanel.setVisual then
-        AntiTPBatPanel.setVisual(AntiTPBatPanel.visible == true)
-    end
 
     PingLagerPanel.setVisual = mkToggle(speedPage, "Ping Lagger", function(on)
         if on then
@@ -10040,7 +10014,7 @@ function buildGui()
         local dropdown = Instance.new("Frame", combatPage)
         dropdown.Size = UDim2.new(0, 100, 0, 90)
         dropdown.Position = UDim2.new(0, 0, 0, 0)
-        dropdown.BackgroundColor3 = Color3.fromRGB(18, 40, 75)
+        dropdown.BackgroundColor3 = Color3.fromRGB(42, 12, 18)
         dropdown.BackgroundTransparency = 0.1
         dropdown.BorderSizePixel = 0
         dropdown.Visible = false
@@ -10766,7 +10740,7 @@ function buildGui()
         local saveBtn = Instance.new("TextButton", row)
         saveBtn.Size = UDim2.new(1, -12, 0.8, 0)
         saveBtn.Position = UDim2.new(0, 6, 0.1, 0)
-        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 55, 110)
+        saveBtn.BackgroundColor3 = Color3.fromRGB(90, 18, 28)
         saveBtn.BackgroundTransparency = 0.15
         saveBtn.BorderSizePixel = 0
         saveBtn.Text = "SAVE CONFIG"
@@ -10797,7 +10771,7 @@ function buildGui()
         local resetPosBtn = Instance.new("TextButton", row)
         resetPosBtn.Size = UDim2.new(1, -12, 0.8, 0)
         resetPosBtn.Position = UDim2.new(0, 6, 0.1, 0)
-        resetPosBtn.BackgroundColor3 = Color3.fromRGB(25, 55, 110)
+        resetPosBtn.BackgroundColor3 = Color3.fromRGB(90, 18, 28)
         resetPosBtn.BackgroundTransparency = 0.15
         resetPosBtn.BorderSizePixel = 0
         resetPosBtn.Text = "RESET POSITIONS"
@@ -10907,7 +10881,7 @@ function buildGui()
     pbFrame = Instance.new("Frame", gui)
     pbFrame.Size = UDim2.new(0, 400, 0, 70)
     pbFrame.Position = UDim2.new(0.5, -200, 1, -60)
-    pbFrame.BackgroundColor3 = Color3.fromRGB(12, 28, 55)
+    pbFrame.BackgroundColor3 = Color3.fromRGB(28, 8, 12)
     pbFrame.BackgroundTransparency = 0.05
     pbFrame.BorderSizePixel = 0
     pbFrame.Active = true
@@ -11012,7 +10986,7 @@ function buildGui()
 
     local fillRegion = Instance.new("Frame", progressRow)
     fillRegion.Size = UDim2.new(1, 0, 1, 0)
-    fillRegion.BackgroundColor3 = Color3.fromRGB(18, 40, 75)
+    fillRegion.BackgroundColor3 = Color3.fromRGB(42, 12, 18)
     fillRegion.BackgroundTransparency = 0.15
     fillRegion.BorderSizePixel = 0
     fillRegion.ClipsDescendants = true
@@ -11165,13 +11139,13 @@ function createMobilePanel()
         bgGrad.Name = "BtnGrad"
         bgGrad.Rotation = 90
         bgGrad.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 55, 105)),
-            ColorSequenceKeypoint.new(0.45, Color3.fromRGB(18, 40, 78)),
-            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 24, 52)),
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(0.45, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0)),
         })
 
         local stroke = Instance.new("UIStroke", btn)
-        stroke.Color = Color3.fromRGB(80, 140, 255)
+        stroke.Color = Color3.fromRGB(220, 30, 40)
         stroke.Thickness = 1.2
         stroke.Transparency = 0.25
         stroke.Name = "NormalStroke"
@@ -11182,7 +11156,7 @@ function createMobilePanel()
         label.Size = UDim2.new(1, 0, 1, 0)
         label.BackgroundTransparency = 1
         label.Text = text
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextColor3 = Color3.fromRGB(220, 30, 40)
         label.TextTransparency = 0
         label.Font = Enum.Font.GothamBlack
         label.TextSize = 11
@@ -11196,8 +11170,6 @@ function createMobilePanel()
             active = state and true or false
             btn:SetAttribute("MobActive", active)
             paintFloatingBtn(btn, active)
-            -- Zorla saf beyaz
-            label.TextColor3 = Color3.fromRGB(255, 255, 255)
             label.TextTransparency = 0
             btn.Text = ""
             btn.TextTransparency = 1
@@ -11506,9 +11478,9 @@ function createTpBatFloatingButton()
     bgGrad.Name = "BtnGrad"
     bgGrad.Rotation = 90
     bgGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 55, 105)),
-        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(18, 40, 78)),
-        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 24, 52)),
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0)),
     })
     local stroke = Instance.new("UIStroke", btnFrame)
     stroke.Color = batDesyncTpEnabled and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(70,70,70)
@@ -11611,13 +11583,13 @@ function createInstaResetFloatingButton()
     bgGrad.Name = "BtnGrad"
     bgGrad.Rotation = 90
     bgGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 55, 105)),
-        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(18, 40, 78)),
-        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 24, 52)),
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0)),
     })
 
     local stroke = Instance.new("UIStroke", btnFrame)
-    stroke.Color = Color3.fromRGB(50, 110, 200)
+    stroke.Color = Color3.fromRGB(180, 40, 50)
     stroke.Thickness = 1.2
     stroke.Transparency = 0.3
 
