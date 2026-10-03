@@ -655,7 +655,7 @@ end
             _G.__SakuraStretchRezMode = "V1"
             _G.__SakuraOptimizerMode = "V1"
             _G.__SakuraStyle2UI = {
-            Mode = "GUI 1",
+            Mode = "GUI 1", -- GUI 2 disabled
             Bg = "BG 1",
             Accent = Color3.fromRGB(220, 30, 40),
             Backgrounds = {
@@ -718,6 +718,7 @@ end
             ["Auto lagger speed"] = nil,
             ["Carry Speed"] = nil,
             ["Insta Reset"] = nil,
+            ["LockPos"] = nil,
             -- Mini UI keybinds (unified)
             BypassToggle = nil,
             LaggerMain = nil,
@@ -1192,7 +1193,7 @@ end
             elseif k == "carrySpeedMode" then
             if v == "v1" or v == "v2" then carrySpeedMode = v end
             elseif k == "guiStyle" then
-            if v == "GUI 1" or v == "GUI 2" then _G.__SakuraStyle2UI.Mode = v end
+            if v == "GUI 1" or v == "GUI 2" then _G.__SakuraStyle2UI.Mode = "GUI 1" end
             elseif k == "guiBg" then
             if v == "BG 1" or v == "BG 2" then _G.__SakuraStyle2UI.Bg = v end
             elseif k == "themePrimary" then
@@ -1720,6 +1721,12 @@ end
             ConnLabel.Parent = ConnectedBadge
 
             local mobileUiLocked = false
+            _G.__SakuraMobileUiLocked = false
+            FeaturePostToggle["LockPos"] = function(active)
+            mobileUiLocked = active == true
+            _G.__SakuraMobileUiLocked = mobileUiLocked
+            if btnVisuals and btnVisuals["LockPos"] then pcall(btnVisuals["LockPos"]) end
+            end
             local Scroll = nil
 
             -- Drag SOLO desde el sidebar header (titulo); click izquierdo en PC o dedo en movil
@@ -6593,6 +6600,8 @@ end
             if now - AntiRagdollV2.ResetCooldown > 0.15 then
             AntiRagdollV2.ResetCooldown = now
             pcall(function()
+            if hum:GetState() == Enum.HumanoidStateType.GettingUp then return end
+            if hum.Health <= 0 or hum:GetState() == Enum.HumanoidStateType.Dead then return end
             hum:ChangeState(Enum.HumanoidStateType.GettingUp)
             root.Velocity = Vector3.zero
             root.RotVelocity = Vector3.zero
@@ -7813,12 +7822,17 @@ end
             end)
 
             FeaturePostToggle["Aimbot"] = function(active)
-            -- Bat x TP = normal follow aimbot only (does NOT touch TP Bat)
+            -- Bat Aimbot only — never enables TP Bat (AutoBat)
             if active then
             if _G.__stopSpeedBoost then _G.__stopSpeedBoost() end
             pcall(function() if _G.__stopAutoplay then _G.__stopAutoplay() end end)
             deactivateOtherAimbots("Aimbot")
-            -- turn off Bat Bypass only (not TP Bat)
+            -- Force TP Bat OFF
+            if _G.__setAutoBat then pcall(_G.__setAutoBat, false) end
+            if toggleStates["AutoBat"] then
+            toggleStates["AutoBat"] = false
+            if toggleVisualUpdaters["AutoBat"] then pcall(toggleVisualUpdaters["AutoBat"]) end
+            end
             if toggleStates["Bat Bypass"] then
             toggleStates["Bat Bypass"] = false
             if FeaturePostToggle["Bat Bypass"] then pcall(FeaturePostToggle["Bat Bypass"], false) end
@@ -7834,6 +7848,7 @@ end
             pcall(function() if _cypherStop then _cypherStop() end end)
             if _G.__refreshSpeedBoost then _G.__refreshSpeedBoost() end
             end
+            if _G.__btnVisuals then for _, v in pairs(_G.__btnVisuals) do pcall(v) end end
             end
             end
 
@@ -10322,9 +10337,9 @@ end
             styleRow.Size = UDim2.new(1, 0, 0, 34)
             styleRow.Position = UDim2.new(0, 0, 0, 0)
             styleRow.BackgroundTransparency = 1
-            makeModeSelector(styleRow, {"GUI 1", "GUI 2"}, _G.__SakuraStyle2UI.Mode, function(selectedStyle)
-            _G.__SakuraStyle2UI.Mode = selectedStyle
-            if _G.__SakuraApplyGuiStyle then pcall(_G.__SakuraApplyGuiStyle, selectedStyle) end
+            makeModeSelector(styleRow, {"GUI 1"}, "GUI 1", function(selectedStyle)
+            _G.__SakuraStyle2UI.Mode = "GUI 1"
+            if _G.__SakuraApplyGuiStyle then pcall(_G.__SakuraApplyGuiStyle, "GUI 1") end
             saveConfig()
             end)
             local bgRow = Instance.new("Frame", guiStyleContainer)
@@ -10333,7 +10348,7 @@ end
             bgRow.Position = UDim2.new(0, 0, 0, 34)
             bgRow.BackgroundTransparency = 1
             local function refreshBgRow()
-            bgRow.Visible = _G.__SakuraStyle2UI.Mode == "GUI 2"
+            bgRow.Visible = false
             end
             makeModeSelector(bgRow, {"BG 1", "BG 2"}, _G.__SakuraStyle2UI.Bg or "BG 1", function(selectedBg)
             _G.__SakuraStyle2UI.Bg = selectedBg
@@ -10767,6 +10782,31 @@ end
             end
             -- También se muestra en móvil; allí empieza activado por defecto.
             makeToggleNoKeybind(visualSection, "Show Buttons", "Show Buttons")
+
+            makeToggle(visualSection, "Lock UI Positions", "LockPos")
+            -- SAVE CONFIG button
+            do
+            local saveRow = Instance.new("Frame", visualSection)
+            saveRow.Size = UDim2.new(1, -2, 0, 40)
+            saveRow.BackgroundTransparency = 1
+            local saveBtn = Instance.new("TextButton", saveRow)
+            saveBtn.Size = UDim2.new(1, -12, 0, 34)
+            saveBtn.Position = UDim2.new(0, 6, 0, 3)
+            saveBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 40)
+            saveBtn.BorderSizePixel = 0
+            saveBtn.Text = "SAVE CONFIG"
+            saveBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            saveBtn.Font = Enum.Font.GothamBold
+            saveBtn.TextSize = 13
+            saveBtn.AutoButtonColor = false
+            Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0, 8)
+            connectBtn(saveBtn, function()
+            saveConfig()
+            saveBtn.Text = "SAVED ✓"
+            task.delay(1.2, function() if saveBtn and saveBtn.Parent then saveBtn.Text = "SAVE CONFIG" end end)
+            end)
+            end
+
 
             if isMobile then
             local sizeContainer = Instance.new("Frame")
@@ -12573,7 +12613,11 @@ end
             local function triggerFeature(featureName)
             if featureName == "LockPos" then
             mobileUiLocked = not mobileUiLocked
+            _G.__SakuraMobileUiLocked = mobileUiLocked
+            toggleStates["LockPos"] = mobileUiLocked
             if btnVisuals["LockPos"] then btnVisuals["LockPos"]() end
+            if toggleVisualUpdaters["LockPos"] then pcall(toggleVisualUpdaters["LockPos"]) end
+            saveConfig()
             return
             end
 
